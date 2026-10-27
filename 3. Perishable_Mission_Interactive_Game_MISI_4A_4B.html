@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Perishable Mission — Misi 4A & 4B Interactive Learning Game</title>
+<style>
+:root{
+  --salmon:#FA8072;--dark:#0F172A;--blue:#2563EB;--red:#D30000;
+  --green:#22C55E;--err:#EF4444;--yellow:#EAB308;--white:#fff;--ink:#172033;
+  --muted:#64748b;--panel:#ffffffee;--line:#e2e8f0;
+}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--salmon);color:var(--ink)}
+button,input{font:inherit} button{cursor:pointer}
+body{display:flex;justify-content:center;align-items:center;padding:18px}
+#app{width:min(100%,1024px);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.shell{width:min(100%,1000px);aspect-ratio:16/9;min-height:620px;position:relative;overflow:hidden;background:linear-gradient(145deg,#fff 0%,#fff7f5 62%,#ffe8e5 100%);border:5px solid rgba(37,99,235,.14);border-radius:26px;box-shadow:0 22px 70px rgba(15,23,42,.25)}
+.topbar{height:72px;padding:12px 16px;display:flex;align-items:center;gap:12px;background:#ffffffdf;backdrop-filter:blur(8px);border-bottom:1px solid #ffffff}
+.brand{font-weight:900;color:var(--blue);letter-spacing:.4px;white-space:nowrap}.brand span{color:var(--red)}
+.progressWrap{flex:1}.progressLine{height:10px;border-radius:99px;background:#e8eef8;overflow:hidden}.progressFill{height:100%;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:99px;transition:width .35s}
+.hud{display:flex;align-items:center;gap:8px;font-weight:800}.pill{padding:8px 10px;border-radius:999px;background:#f1f5f9;font-size:13px}
+.hearts{letter-spacing:1px}.timer{min-width:70px;text-align:center;background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
+.iconBtn{width:40px;height:40px;border:0;border-radius:12px;background:#eef2ff;color:#1e40af;font-weight:900}
+.content{position:absolute;inset:72px 0 58px;overflow:auto;padding:26px}
+.footer{position:absolute;left:0;right:0;bottom:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#ffffffde;border-top:1px solid #fff}
+.kicker{font-size:13px;font-weight:900;text-transform:uppercase;color:var(--red);letter-spacing:1.3px}
+h1{font-size:clamp(28px,4vw,48px);line-height:1.04;margin:10px 0 12px}
+h2{font-size:clamp(22px,3vw,32px);margin:0 0 10px}
+.lead{font-size:clamp(15px,1.8vw,18px);color:#475569;line-height:1.55}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 25px rgba(15,23,42,.09);padding:20px}
+.center{display:grid;place-items:center;text-align:center;height:100%}
+.nameBox{width:min(520px,100%);margin:auto}.nameInput{width:100%;padding:16px 18px;border:2px solid #cbd5e1;border-radius:14px;outline:none}.nameInput:focus{border-color:var(--blue);box-shadow:0 0 0 4px #2563eb22}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:900;box-shadow:0 7px 0 rgba(15,23,42,.12);transition:.12s}.btn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(15,23,42,.12)}.btnPrimary{background:var(--blue);color:#fff}.btnRed{background:var(--red);color:#fff}.btnGhost{background:#eff6ff;color:#1d4ed8}.btnDanger{background:#fee2e2;color:#b91c1c}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tag{font-size:12px;font-weight:900;padding:7px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8}
+.modalBack{position:fixed;inset:0;background:rgba(15,23,42,.55);display:grid;place-items:center;padding:18px;z-index:50}.modal{width:min(560px,100%);background:#fff;border-radius:22px;padding:24px;box-shadow:0 24px 80px #0004}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:13px 18px;border-radius:12px;opacity:0;pointer-events:none;z-index:80;transition:.25s;max-width:min(92vw,640px);text-align:center;font-weight:700}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.instructions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}.inst{padding:15px;border:2px dashed #bfdbfe;border-radius:16px;background:#f8fbff}.inst strong{display:block;margin:7px 0 4px}.inst .big{font-size:30px}
+.questionTop{display:flex;align-items:start;gap:16px}.qnum{width:52px;height:52px;border-radius:16px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:20px;font-weight:900;flex:none}
+.prompt{font-size:clamp(19px,2.4vw,27px);font-weight:900;line-height:1.25;margin-top:2px}
+.choiceGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}.choice{border:2px solid #e2e8f0;background:#fff;border-radius:18px;padding:16px;min-height:118px;text-align:left;transition:.18s;display:flex;gap:13px;align-items:center}.choice:hover{border-color:#93c5fd;transform:translateY(-2px)}.choice .pic{font-size:44px;width:58px;text-align:center}.choice strong{display:block}.choice small{color:#64748b;line-height:1.4}
+.choice.correct{border-color:var(--green);background:#f0fdf4}.choice.wrong{border-color:var(--err);background:#fef2f2}
+.tfGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}.tf{min-height:170px;border-radius:20px;border:3px solid #e2e8f0;background:#fff;font-size:28px;font-weight:1000}.tf span{display:block;font-size:54px;margin-bottom:8px}.true{color:#15803d}.false{color:#b91c1c}
+.dragArea{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}.dragPool,.dropZone{min-height:220px;border-radius:20px;border:2px dashed #93c5fd;padding:14px;background:#eff6ff}.dropZone{background:#fff7ed;border-color:#fdba74}.dropZone.goodZone{background:#f0fdf4;border-color:#86efac}.dragItems{display:grid;gap:10px;margin-top:10px}.dragItem{padding:13px 14px;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 4px 12px #0f172a10;font-weight:800;cursor:grab}.dragItem.selected{outline:3px solid #93c5fd}.dropLabel{font-weight:950;font-size:18px}.dropHint{font-size:13px;color:#64748b;margin-top:4px}
+.orderList{display:grid;gap:10px;margin-top:18px}.orderItem{display:flex;align-items:center;gap:10px;padding:13px 14px;background:#fff;border:2px solid #e2e8f0;border-radius:15px}.orderItem .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#dbeafe;color:#1d4ed8;font-weight:900}.orderBtns{margin-left:auto;display:flex;gap:5px}.mini{width:34px;height:32px;border:0;border-radius:9px;background:#f1f5f9;font-weight:900}
+.connectWrap{position:relative;margin-top:20px;padding:18px 10px;background:#f8fbff;border:2px solid #dbeafe;border-radius:20px;overflow:hidden}.connectGrid{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 88px minmax(0,1fr);gap:14px;align-items:stretch;min-height:300px}.connectCol{display:grid;gap:12px;align-content:stretch;position:relative;z-index:2}.connectItem{position:relative;display:flex;align-items:center;min-height:62px;padding:12px 38px 12px 14px;background:#fff;border:2px solid #dbeafe;border-radius:16px;font-weight:850;line-height:1.35;box-shadow:0 4px 12px #0f172a10;user-select:none}.connectCol.right .connectItem{padding:12px 14px 12px 38px}.connectDot{position:absolute;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:4px solid #fff;background:#93c5fd;box-shadow:0 0 0 3px #2563eb;z-index:3;touch-action:manipulation}.connectDot.left{right:6px}.connectDot.right{left:6px}.connectDot.selected{background:#2563eb;box-shadow:0 0 0 4px #bfdbfe}.connectItem.matched{border-color:#60a5fa;background:#eff6ff}.connectLines{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}.connectLines line{stroke:#2563eb;stroke-width:3;stroke-linecap:round;opacity:.9}.connectHint{margin-top:10px;font-size:13px;color:#64748b}.connectActions{margin-top:16px;display:flex;justify-content:flex-end}.connectStatus{margin-top:10px;font-size:13px;font-weight:800;color:#1d4ed8;text-align:right}
+.feedback{margin-top:16px;padding:14px 16px;border-radius:16px;font-weight:700;line-height:1.5}.fbGood{background:#dcfce7;color:#166534}.fbBad{background:#fee2e2;color:#991b1b}.fbWarn{background:#fef9c3;color:#854d0e}
+.scoreBoard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.stat{padding:16px;border-radius:16px;background:#f8fafc;text-align:center}.stat .v{font-size:30px;font-weight:1000}.stars{font-size:42px;letter-spacing:3px}
+.resultCard{max-width:720px;margin:auto}.review{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin-top:18px}.reviewItem{padding:13px;background:#f8fafc;border-radius:14px}.reviewItem b{display:block}.small{font-size:13px;color:#64748b}
+.hidden{display:none!important}
+@media(max-width:760px){
+  body{padding:0}.shell{width:100%;min-height:100vh;aspect-ratio:auto;border-radius:0;border-width:0}.topbar{height:64px}.content{inset:64px 0 56px;padding:16px}.instructions,.choiceGrid,.dragArea,.review{grid-template-columns:1fr}.tfGrid{grid-template-columns:1fr}.hud .pill:nth-child(2){display:none}.brand{font-size:13px}
+  .connectGrid{grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);gap:6px}.connectWrap{padding:12px 4px}.connectItem{min-height:74px;padding:10px 32px 10px 10px;font-size:13px}.connectCol.right .connectItem{padding:10px 10px 10px 32px}.connectDot{width:21px;height:21px;box-shadow:0 0 0 3px #2563eb}.connectDot.left{right:2px}.connectDot.right{left:2px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modalRoot"></div>
+<div id="toast" class="toast"></div>
+<script>
+'use strict';
+// Question bank derived from: PERISHABLE MISI 4A (AREA KERJA + SEAFOOD) and PERISHABLE MISI 4B - SARANA RED MEAT.
+// The interaction rules, scoring, lives, timer, feedback, and responsive layout intentionally follow the supplied master HTML.
+
+const QUESTIONS = [
+ {id:1,level:1,type:'choose',category:'Misi 4A • Area Kerja',
+  q:'Pada Perishable tipe BESAR, area tambahan untuk pengolahan daging disebut…',
+  choices:[
+   {pic:'🥩',title:'Wet Area / Area Butcher',desc:'Area yang spesifik untuk pengolahan daging',ok:true},
+   {pic:'🧊',title:'Cold Storage',desc:'Area utama untuk penyimpanan dingin',ok:false},
+   {pic:'📦',title:'Dry Area',desc:'Area untuk penyimpanan dokumen',ok:false},
+   {pic:'🛒',title:'Area Display',desc:'Area utama untuk menjual produk',ok:false}
+  ],why:'BENAR. Pada Perishable tipe Besar, area tambahan untuk pengolahan daging disebut “Wet Area” dan dalam bahasa sehari-hari dikenal sebagai Area Butcher.'},
+ {id:2,level:1,type:'tf',category:'Misi 4A • Area Kerja',
+  q:'Benar atau Salah: Talenan boleh dibersihkan dengan cara mencelupkannya ke dalam ember atau bak cuci.',ans:false,
+  why:'SALAH. Talenan harus dibersihkan setelah selesai mengolah produk dengan air mengalir di bak cuci. Materi melarang mencuci dengan cara mencelupkan talenan ke wadah seperti ember atau bak cuci.'},
+ {id:3,level:1,type:'order',category:'Misi 4A • Pengenalan Pisau',
+  q:'Urutkan langkah setelah selesai menggunakan pisau untuk pengolahan produk.',
+  order:[
+   'Cuci pisau dengan air mengalir di bak cuci / sink',
+   'Gunakan sabun cuci Food Grade jika ada lemak atau sisa produk',
+   'Keringkan pisau dengan lap kering',
+   'Simpan pisau di tempat pisau dalam keadaan kering'
+  ],why:'Urutan sesuai materi: cuci dengan air mengalir, gunakan sabun Food Grade bila ada lemak/sisa produk, keringkan dengan lap kering, lalu simpan di tempat pisau dalam keadaan kering.'},
+ {id:4,level:2,type:'drag',category:'Misi 4A • Area Seafood',
+  q:'Kelompokkan praktik berikut sebagai tindakan yang sesuai vs tidak sesuai di Area Seafood.',
+  items:[
+   {t:'Bersihkan aquarium setiap 2 hari',zone:'do'},
+   {t:'Segera ganti air dan bersihkan filter saat air keruh',zone:'do'},
+   {t:'Gunakan timbangan ikan untuk menimbang produk selain hewan air',zone:'dont'},
+   {t:'Bersihkan meja display ikan setiap hari',zone:'do'},
+   {t:'Biarkan sisa produk tertinggal di meja display',zone:'dont'}
+  ],why:'Materi menekankan kebersihan aquarium setiap 2 hari, penggantian air dan pembersihan filter saat air keruh, kebersihan meja display setiap hari, serta larangan menggunakan timbangan ikan untuk produk selain hewan air dan meninggalkan sisa produk di display.'},
+ {id:5,level:2,type:'connect',category:'Misi 4A • Area Seafood',
+  q:'Hubungkan fungsi sarana kerja di sebelah kiri dengan sarana yang tepat di sebelah kanan.',
+  left:[
+   {t:'Menghilangkan sisik ikan dengan aman dan higienis',match:'Fish Scraper'},
+   {t:'Memingsankan (stunning) ikan sebelum dipotong atau diolah',match:'Palu Karet'},
+   {t:'Menimbang ikan dan hewan air lainnya',match:'Timbangan Ikan'},
+   {t:'Menjaga kondisi air dan filter aquarium tetap bersih',match:'Aquarium'}
+  ],
+  right:['Palu Karet','Aquarium','Fish Scraper','Timbangan Ikan'],
+  why:'Fish Scraper digunakan untuk menghilangkan sisik ikan, palu karet untuk memingsankan (stunning) ikan sebelum dipotong atau diolah, dan timbangan ikan khusus untuk ikan serta hewan air lainnya. Aquarium harus dijaga kebersihan kaca, air, dan filternya.'},
+ {id:6,level:2,type:'tf',category:'Misi 4A • Meja Display Ikan',
+  q:'Benar atau Salah: Saat display ikan, ice flakes (serpihan es batu) harus memenuhi meja display ikan.',ans:true,
+  why:'BENAR. Materi menyatakan bahwa saat display, ice flakes harus memenuhi meja display ikan dan kebersihan meja dijaga setiap hari.'},
+
+ {id:7,level:1,type:'order',category:'Misi 4B • Sarung Tangan Baja',
+  q:'Langkah-langah penggunaan sarung tangan saat hendak melakukan pengolahan daging dengan menggunakan alat Bandsaw.',
+  order:[
+   'Cuci tangan sampai bersih dengan air mengalir',
+   'Keringkan dengan handuk kering dan bersih',
+   'Pakai sarung tangan karet latex',
+   'Pakai sarung tangan baja'
+  ],why:'Urutan sesuai materi: bersihkan tangan dengan sabun cuci tangan dan keringkan dengan handuk kering, gunakan sarung tangan karet/latex terlebih dahulu, lalu gunakan sarung tangan baja sebagai lapisan terluar untuk bekerja.'},
+ {id:8,level:1,type:'tf',category:'Misi 4B • Bandsaw Machine',
+  q:'Benar atau Salah: Mesin Bandsaw boleh tetap tersambung listrik saat dilakukan pembersihan.',ans:false,
+  why:'SALAH. Saat melakukan kebersihan Bandsaw Machine, mesin harus dalam keadaan tidak tersambung listrik (kondisi mati).'},
+ {id:9,level:2,type:'drag',category:'Misi 4B • Kebersihan Bandsaw',
+  q:'Kelompokkan praktik berikut sebagai tindakan aman vs tidak aman saat membersihkan Bandsaw Machine.',
+  items:[
+   {t:'Pastikan mesin tidak tersambung listrik (kondisi mati)',zone:'do'},
+   {t:'Pembongkaran mesin dilakukan oleh teknisi',zone:'do'},
+   {t:'Aktivitas kebersihan dalam pantauan atasan',zone:'do'},
+   {t:'Bongkar bagian dalam sendiri sebagai tim Perishable',zone:'dont'},
+   {t:'Membersihkan mesin saat masih tersambung listrik',zone:'dont'}
+  ],why:'Materi mewajibkan mesin dalam kondisi mati/tidak tersambung listrik, pembongkaran dilakukan oleh teknisi, dan kebersihan dilakukan dalam pantauan atasan. Tim Perishable tidak diperbolehkan membongkar bagian dalam atau membersihkan saat mesin masih tersambung listrik.'},
+ {id:10,level:2,type:'order',category:'Misi 4B • Mincer',
+  q:'Urutkan langkah inti pengolahan dengan Mincer berdasarkan materi.',
+  order:[
+   'Letakkan potongan daging di tray Mincer',
+   'Siapkan Food Pusher yang bersih dan siap digunakan',
+   'Dorong daging menggunakan Food Pusher, bukan tangan',
+   'Lakukan proses kembali beberapa kali sampai hasil berbentuk pasta',
+   'Tempatkan hasil penggilingan di tray aluminium dan lakukan wrapping sebelum display'
+  ],why:'Materi menunjukkan daging diletakkan di tray Mincer, Food Pusher harus tersedia dan bersih, daging didorong dengan Food Pusher (bukan tangan), proses dapat diulang sampai berbentuk pasta, lalu hasil ditempatkan di tray aluminium dan di-wrapping sebelum display.'},
+ {id:11,level:2,type:'choose',category:'Misi 4B • Mincer',
+  q:'Apa yang wajib dilakukan sebelum hasil penggilingan daging ditempatkan untuk display?',
+  choices:[
+   {pic:'📦',title:'Wrapping',desc:'Menjaga higienitas produk sebelum display',ok:true},
+   {pic:'💧',title:'Direndam air',desc:'Tidak disebutkan sebagai langkah materi',ok:false},
+   {pic:'🔥',title:'Dipanaskan',desc:'Tidak disebutkan sebagai langkah materi',ok:false},
+   {pic:'🧂',title:'Ditaburi garam',desc:'Tidak disebutkan sebagai langkah materi',ok:false}
+  ],why:'Materi menegaskan hasil penggilingan daging ditempatkan di tray aluminium dan dilakukan wrapping sebelum display agar higienitas produk tetap terjaga.'},
+ {id:12,level:3,type:'choose',category:'Misi 4B • Penyimpanan Suhu',
+  q:'Pernyataan yang tepat terkait suhu pada chiller dan freezer adalah:',
+  choices:[
+   {pic:'A',title:'Suhu Chiller harus selalu berada diatas suhu 10°C',ok:false},
+   {pic:'B',title:'Suhu Freezer sebaiknya berada pada suhu -5°C s/d 0°C',ok:false},
+   {pic:'C',title:'Saat Suhu Freezer berada di angka -19°C, wajib info kepada atasan untuk perbaikan',ok:false},
+   {pic:'D',title:'Saat Suhu Chiller berada di angka 11°C, wajib info kepada atasan untuk perbaikan',ok:true}
+  ],why:'BENAR. Untuk alasan yang dapat didukung langsung oleh materi terlampir, materi menyebut Cold Storage harus berada pada suhu -18 °C s/d -20 °C. Jika suhu lebih tinggi dari -18 °C, wajib diinformasikan kepada atasan untuk dilakukan perbaikan. Materi terlampir tidak menyebut angka 11 °C untuk Chiller secara eksplisit, sehingga alasan untuk angka tersebut tidak dapat ditarik langsung dari PDF.'}
+];
+
+const state={view:'start',name:'',idx:0,score:0,correct:0,lives:5,answered:false,muted:false,timer:null,seconds:30,drag:{},order:[],connect:{}};
+let audioCtx=null,bgmTimer=null;
+function initAudio(){ if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();} if(audioCtx.state==='suspended') audioCtx.resume(); }
+function tone(freq,dur=.08,type='sine',gain=.035,when=0){ if(state.muted)return; initAudio(); const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(gain,audioCtx.currentTime+when);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+when+dur);o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+when);o.stop(audioCtx.currentTime+when+dur);}
+function clickS(){tone(500,.05,'square',.018)}
+function goodS(){tone(660,.10,'sine',.03);tone(880,.14,'sine',.028,.09)}
+function badS(){tone(180,.16,'sawtooth',.035);tone(120,.2,'sawtooth',.025,.12)}
+function victoryS(){[523,659,784,1047].forEach((f,i)=>tone(f,.18,'sine',.04,i*.12))}
+function gameoverS(){[220,185,150].forEach((f,i)=>tone(f,.22,'triangle',.04,i*.16))}
+function startBgm(){ if(state.muted||bgmTimer) return; let n=0; const notes=[196,246.94,293.66,246.94]; bgmTimer=setInterval(()=>{tone(notes[n%notes.length],.28,'sine',.008);n++},620)}
+function stopBgm(){clearInterval(bgmTimer);bgmTimer=null}
+function toast(msg,kind=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'; if(kind==='good')t.style.background='#166534'; else if(kind==='bad')t.style.background='#991b1b'; else t.style.background='#0f172a'; clearTimeout(toast._t);toast._t=setTimeout(()=>t.className='toast',3300)}
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function iconForType(t){return ({choose:'🖼️',tf:'⚡',drag:'↔️',connect:'🔗',order:'↕️'})[t]}
+function baseUI(inner){
+ const q=QUESTIONS[state.idx], pct=state.view==='game'?((state.idx)/QUESTIONS.length*100):0;
+ return `<div class="shell">
+ <div class="topbar">
+  <div class="brand">PERISHABLE <span>MISSION</span></div>
+  <div class="progressWrap"><div class="progressLine"><div class="progressFill" style="width:${state.view==='start'?0:state.view==='result'?100:pct}%"></div></div></div>
+  ${state.view==='game'?`<div class="hud"><div class="pill">Level ${q.level}</div><div class="pill hearts" aria-label="Nyawa">${'❤️'.repeat(state.lives)}${'🖤'.repeat(5-state.lives)}</div><div class="pill timer">⏱️ <span id="timerNum">30</span>s</div></div>`:''}
+  <button class="iconBtn" title="Mute/Unmute" aria-label="Mute/Unmute" onclick="toggleMute()">${state.muted?'🔇':'🔊'}</button>
+ </div>
+ <main class="content">${inner}</main>
+ <div class="footer"><div class="small">${state.name?`Peserta: <b>${esc(state.name)}</b>`:'Game Edukasi Interaktif • C2–C3'}</div>${state.view!=='start'&&state.view!=='result'?`<button class="btn btnDanger" onclick="confirmSurrender()">Menyerah</button>`:''}</div>
+ </div>`;
+}
+function render(){
+ let app=document.getElementById('app'), html='';
+ if(state.view==='start') html=baseUI(`<div class="center"><div class="nameBox card">
+  <div style="font-size:58px">🥩🐟🧼</div><div class="kicker">Perishable Mission</div><h1>Challenge: Area Bersih & Sarana Kerja</h1>
+  <p class="lead">Game pembelajaran untuk memahami kebersihan diri, area kerja, Seafood, Red Meat, Mincer, Bandsaw, dan Cold Storage.</p>
+  <div class="badges"><span class="tag">12 Soal</span><span class="tag">30 detik/soal</span><span class="tag">5 Nyawa</span><span class="tag">Lulus ≥ 700 poin</span></div>
+  <label style="display:block;text-align:left;font-weight:900;margin:18px 0 7px">Nama Peserta</label>
+  <input id="nameInput" class="nameInput" placeholder="Tulis nama lengkap..." maxlength="60" autocomplete="name">
+  <div style="margin-top:16px"><button class="btn btnPrimary" onclick="startGame()">MULAI GAME 🚀</button></div>
+ </div></div>`);
+ else if(state.view==='game') html=baseUI(renderGame());
+ else html=baseUI(renderResult());
+ app.innerHTML=html;
+ if(state.view==='game') startTimer();
+ if(state.view==='game' && QUESTIONS[state.idx]?.type==='connect') requestAnimationFrame(renderConnectState);
+ startBgm();
+}
+function startGame(){const n=document.getElementById('nameInput').value.trim(); if(!n){toast('Silakan isi nama peserta terlebih dahulu.','bad');return} clickS();state.name=n;state.idx=0;state.score=0;state.correct=0;state.lives=5;state.view='game';state.answered=false;render(); showHowTo(QUESTIONS[0]);}
+function renderGame(){
+ const q=QUESTIONS[state.idx];
+ return `<div class="questionTop"><div class="qnum">${state.idx+1}</div><div><div class="kicker">${iconForType(q.type)} ${q.category} • Level ${q.level}</div><div class="prompt">${q.q}</div></div></div>
+ ${q.type==='choose'?chooseHTML(q):q.type==='tf'?tfHTML(q):q.type==='drag'?dragHTML(q):q.type==='connect'?connectHTML(q):orderHTML(q)}
+ <div id="feedback"></div>`;
+}
+function chooseHTML(q){return `<div class="choiceGrid">${q.choices.map((c,i)=>`<button class="choice" id="choice-${i}" onclick="answerChoose(${i})"><div class="pic">${c.pic}</div><div><strong>${esc(c.title)}</strong>${(q.id===1||q.id===11||q.id===12)?'':`<small>${esc(c.desc)}</small>`}</div></button>`).join('')}</div>`}
+function tfHTML(q){return `<div class="tfGrid"><button class="tf true" onclick="answerTF(true)"><span>✅</span>BENAR</button><button class="tf false" onclick="answerTF(false)"><span>❌</span>SALAH</button></div>`}
+function dragHTML(q){state.drag={};return `<p class="small">💡 Desktop: seret kartu ke kotak. Mobile: ketuk kartu lalu ketuk tujuan.</p>
+<div class="dragArea"><div class="dragPool" id="dragPool"><div class="dropLabel">Kartu</div><div class="dropHint">Kelompokkan semua kartu</div><div class="dragItems" id="poolItems">${q.items.map((x,i)=>`<div class="dragItem" draggable="true" data-i="${i}" onclick="selectDrag(${i})" ondragstart="dragStart(event,${i})">${esc(x.t)}</div>`).join('')}</div></div>
+<div class="dropZone goodZone" id="doZone" ondragover="dragOver(event)" ondrop="dropTo('do')" onclick="dropSelected('do')"><div class="dropLabel">✅ LAKUKAN</div><div class="dropHint">Praktik yang sesuai materi</div><div class="dragItems" id="doItems"></div></div>
+<div class="dropZone" id="dontZone" ondragover="dragOver(event)" ondrop="dropTo('dont')" onclick="dropSelected('dont')"><div class="dropLabel">🚫 JANGAN</div><div class="dropHint">Praktik yang dilarang/tidak sesuai</div><div class="dragItems" id="dontItems"></div></div>
+</div><div style="margin-top:16px"><button class="btn btnPrimary" onclick="checkDrag()">CEK JAWABAN</button></div>`}
+function connectHTML(q){
+ state.connect={selectedLeft:null,matches:{},rightOrder:q.right.map((_,i)=>i).sort(()=>Math.random()-.5)};
+ return `<p class="small">💡 Ketuk titik di sisi kiri, lalu ketuk titik yang sesuai di sisi kanan untuk membuat garis penghubung.</p>
+ <div class="connectWrap" id="connectWrap"><svg class="connectLines" id="connectLines" aria-hidden="true"></svg><div class="connectGrid">
+  <div class="connectCol left">${q.left.map((x,i)=>`<div class="connectItem" id="connect-left-item-${i}"><span>${esc(x.t)}</span><button class="connectDot left" type="button" id="connect-left-${i}" aria-label="Titik kiri ${i+1}" onclick="connectSelectLeft(${i})"></button></div>`).join('')}</div>
+  <div></div>
+  <div class="connectCol right">${state.connect.rightOrder.map((idx)=>`<div class="connectItem" id="connect-right-item-${idx}"><button class="connectDot right" type="button" id="connect-right-${idx}" aria-label="Titik kanan ${esc(q.right[idx])}" onclick="connectSelectRight(${idx})"></button><span>${esc(q.right[idx])}</span></div>`).join('')}</div>
+ </div></div>
+ <div class="connectStatus" id="connectStatus">0 / ${q.left.length} pasangan terhubung</div>
+ <div class="connectActions"><button class="btn btnPrimary" onclick="checkConnect()">CEK JAWABAN</button></div>`;
+} 
+function orderHTML(q){if(state.order.length!==q.order.length) state.order=q.order.map((_,i)=>i).sort(()=>Math.random()-.5); return `<p class="small">💡 Urutkan dengan tombol ▲ ▼ sampai menjadi langkah yang paling tepat.</p><div class="orderList">${state.order.map((idx,pos)=>`<div class="orderItem"><div class="num">${pos+1}</div><div style="font-weight:800;flex:1">${esc(q.order[idx])}</div><div class="orderBtns"><button class="mini" onclick="moveOrder(${pos},-1)" aria-label="Naik">▲</button><button class="mini" onclick="moveOrder(${pos},1)" aria-label="Turun">▼</button></div></div>`).join('')}</div><div style="margin-top:16px"><button class="btn btnPrimary" onclick="checkOrder()">CEK URUTAN</button></div>`}
+function startTimer(){clearInterval(state.timer);state.seconds=30;state.answered=false;let el=document.getElementById('timerNum');if(el)el.textContent=state.seconds;state.timer=setInterval(()=>{if(state.view!=='game'){clearInterval(state.timer);return}state.seconds--;let e=document.getElementById('timerNum');if(e)e.textContent=state.seconds;if(state.seconds<=5&&e)e.parentElement.style.background='#fee2e2'; if(state.seconds<=0){clearInterval(state.timer);timeOut();}},1000)}
+function timeOut(){if(state.answered)return;state.answered=true;badS();state.lives--;showFeedback(false,'Waktu habis! Jawaban dianggap salah. '+QUESTIONS[state.idx].why)}
+function lock(){state.answered=true;clearInterval(state.timer)}
+function evaluate(ok,explanation){
+ if(state.answered)return;lock();
+ if(ok){state.correct++;state.score+=100;goodS();showFeedback(true,'Benar! '+explanation)}
+ else{state.lives--;badS();showFeedback(false,'Belum tepat. '+explanation)}
+ if(state.lives<=0) state._willGameOver=true; else state._willGameOver=false;
+}
+function showFeedback(ok,msg){const f=document.getElementById('feedback');if(f){f.className='feedback '+(ok?'fbGood':'fbBad');f.innerHTML=(ok?'✅ ':'❌ ')+esc(msg)+`<div style="margin-top:14px;text-align:right"><button class="btn btnPrimary" onclick="continueAfterFeedback()">SOAL BERIKUTNYA ➜</button></div>`}toast(msg,ok?'good':'bad')}
+function continueAfterFeedback(){clickS(); if(state.view!=='game') return; if(state.lives<=0){gameOver();return;} nextQuestion()}
+function answerChoose(i){const q=QUESTIONS[state.idx], choices=[...document.querySelectorAll('.choice')];choices.forEach(b=>b.disabled=true);document.getElementById('choice-'+i).classList.add(q.choices[i].ok?'correct':'wrong'); if(!q.choices[i].ok){const ix=q.choices.findIndex(x=>x.ok);if(ix>=0)document.getElementById('choice-'+ix).classList.add('correct');} evaluate(q.choices[i].ok,q.why)}
+function answerTF(v){evaluate(v===QUESTIONS[state.idx].ans,QUESTIONS[state.idx].why)}
+function selectDrag(i){if(state.answered)return;state.drag.selected=i;document.querySelectorAll('.dragItem').forEach(x=>x.classList.remove('selected'));const el=document.querySelector(`.dragItem[data-i="${i}"]`);if(el)el.classList.add('selected');}
+function dragStart(e,i){state.drag.selected=i;e.dataTransfer.setData('text/plain',String(i))}
+function dragOver(e){e.preventDefault()}
+function dropTo(zone){if(state.answered)return;const i=state.drag.selected;if(i===undefined)return;moveCard(i,zone)}
+function dropSelected(zone){const i=state.drag.selected;if(i===undefined)return;moveCard(i,zone)}
+function moveCard(i,zone){state.drag[i]=zone;renderDragDOM();state.drag.selected=undefined}
+function renderDragDOM(){const q=QUESTIONS[state.idx];for(const id of ['poolItems','doItems','dontItems'])document.getElementById(id)?.replaceChildren();q.items.forEach((x,i)=>{const z=state.drag[i]||'pool';const d=document.createElement('div');d.className='dragItem';d.draggable=true;d.dataset.i=i;d.textContent=x.t;d.onclick=()=>selectDrag(i);d.ondragstart=e=>dragStart(e,i);const target=z==='do'?'doItems':z==='dont'?'dontItems':'poolItems';document.getElementById(target)?.appendChild(d)})}
+function checkDrag(){const q=QUESTIONS[state.idx];const all=q.items.every((x,i)=>state.drag[i]);const correct=all&&q.items.every((x,i)=>state.drag[i]===x.zone); if(!all){toast('Semua kartu harus dikelompokkan terlebih dahulu.','bad');return}evaluate(correct,q.why)}
+function connectSelectLeft(i){
+ if(state.answered)return;
+ state.connect.selectedLeft=i;
+ document.querySelectorAll('.connectDot.left').forEach(x=>x.classList.remove('selected'));
+ const dot=document.getElementById('connect-left-'+i); if(dot)dot.classList.add('selected');
+}
+function connectSelectRight(rIdx){
+ if(state.answered || state.connect.selectedLeft===null)return;
+ const lIdx=state.connect.selectedLeft;
+ // Remove any existing match from this left or right so each dot is used once.
+ for(const [left,right] of Object.entries(state.connect.matches)){
+  if(Number(left)===lIdx || right===rIdx) delete state.connect.matches[left];
+ }
+ state.connect.matches[lIdx]=rIdx;
+ state.connect.selectedLeft=null;
+ document.querySelectorAll('.connectDot.left').forEach(x=>x.classList.remove('selected'));
+ renderConnectState();
+}
+function renderConnectState(){
+ const q=QUESTIONS[state.idx];
+ q.left.forEach((_,i)=>{document.getElementById('connect-left-item-'+i)?.classList.remove('matched')});
+ q.right.forEach((_,i)=>{document.getElementById('connect-right-item-'+i)?.classList.remove('matched')});
+ const svg=document.getElementById('connectLines'); if(!svg)return;
+ svg.innerHTML='';
+ const wrap=document.getElementById('connectWrap'); if(!wrap)return;
+ const wr=wrap.getBoundingClientRect();
+ const svgRect=svg.getBoundingClientRect();
+ Object.entries(state.connect.matches).forEach(([left,right])=>{
+  const l=document.getElementById('connect-left-'+left), r=document.getElementById('connect-right-'+right); if(!l||!r)return;
+  const lr=l.getBoundingClientRect(), rr=r.getBoundingClientRect();
+  const x1=lr.left+lr.width/2-svgRect.left, y1=lr.top+lr.height/2-svgRect.top;
+  const x2=rr.left+rr.width/2-svgRect.left, y2=rr.top+rr.height/2-svgRect.top;
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2); svg.appendChild(line);
+  document.getElementById('connect-left-item-'+left)?.classList.add('matched');
+  document.getElementById('connect-right-item-'+right)?.classList.add('matched');
+ });
+ const status=document.getElementById('connectStatus'); if(status)status.textContent=`${Object.keys(state.connect.matches).length} / ${q.left.length} pasangan terhubung`;
+}
+function checkConnect(){
+ const q=QUESTIONS[state.idx];
+ const total=Object.keys(state.connect.matches).length;
+ if(total<q.left.length){toast('Hubungkan semua pasangan terlebih dahulu.','bad');return}
+ const correct=q.left.every((x,i)=>state.connect.matches[i]===q.right.indexOf(x.match));
+ evaluate(correct,q.why);
+}
+function moveOrder(pos,dir){if(state.answered)return;const np=pos+dir;if(np<0||np>=state.order.length)return;[state.order[pos],state.order[np]]=[state.order[np],state.order[pos]];render()}
+function checkOrder(){const q=QUESTIONS[state.idx];const ok=q.order.every((_,i)=>state.order[i]===i);evaluate(ok,q.why)}
+function nextQuestion(){if(state.idx<QUESTIONS.length-1){state.idx++;state.order=[];state.connect={};render();}else finishGame()}
+function finishGame(){clearInterval(state.timer);state.view='result';victoryS();render()}
+function gameOver(){clearInterval(state.timer);state.view='result';gameoverS();render()}
+function renderResult(){const pct=Math.round(state.correct/QUESTIONS.length*100),passed=state.score>=700,stars=state.score>=1000?3:state.score>=800?2:state.score>=700?1:0;
+ const advice=passed?'Pertahankan pemahaman tentang kebersihan area, penggunaan sarana kerja, serta langkah aman Bandsaw, Mincer, dan Cold Storage.':'Ulangi materi Misi 4A dan 4B. Fokus pada area kerja, Seafood, Sarung Tangan Baja, kebersihan Bandsaw & Mincer, serta aturan Cold Storage.';
+ return `<div class="center"><div class="resultCard card"><div style="font-size:64px">${passed?'🏆':'🧭'}</div><div class="kicker">${passed?'LAYAR KEMENANGAN':'LAYAR EVALUASI'}</div><h1>${passed?'Selamat, '+esc(state.name)+'!':'Tetap Semangat, '+esc(state.name)+'!'}</h1>
+ <p class="lead">${passed?'Kamu mencapai batas kelulusan dan mendapatkan lencana kualifikasi.':'Skor belum mencapai batas kelulusan 700 poin. Gunakan evaluasi ini sebagai petunjuk belajar ulang.'}</p>
+ <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+ <div class="scoreBoard"><div class="stat"><div class="v">${state.score}</div><div>Skor / 1200</div></div><div class="stat"><div class="v">${pct}%</div><div>Ketepatan</div></div><div class="stat"><div class="v">${state.correct}/${QUESTIONS.length}</div><div>Benar</div></div></div>
+ <div class="badges"><span class="tag">${passed?'BADGE: PERISHABLE QUALIFIED':'STATUS: PERLU PERBAIKAN'}</span><span class="tag">Passing: 700 poin</span></div>
+ <div class="feedback ${passed?'fbGood':'fbWarn'}"><b>${passed?'Ringkasan Performa':'Saran Perbaikan'}:</b> ${advice}</div>
+ <div class="review"><div class="reviewItem"><b>Misi 4A • Area Kerja</b><span class="small">Wet Area, meja pengolahan, talenan, dan kebersihan sarana kerja.</span></div><div class="reviewItem"><b>Misi 4A • Seafood</b><span class="small">Fish Scraper, palu karet, timbangan ikan, aquarium, display, dan ice flakes.</span></div><div class="reviewItem"><b>Misi 4B • Red Meat</b><span class="small">Sarung tangan baja, Bandsaw, Mincer, Food Pusher, dan kebersihan mesin.</span></div><div class="reviewItem"><b>Misi 4B • Cold Storage</b><span class="small">Suhu -18 °C s/d -20 °C, kebersihan lantai, pintu maksimal 5 menit, dan perlindungan dingin.</span></div></div>
+ <div style="margin-top:20px" class="row" style="justify-content:center"><button class="btn btnPrimary" onclick="retry()">🔄 ULANGI KUIS</button></div>
+ </div></div>`;
+}
+function retry(){clickS();state.idx=0;state.score=0;state.correct=0;state.lives=5;state.view='start';state.name='';state.order=[];state.connect={};render()}
+function toggleMute(){state.muted=!state.muted; if(state.muted)stopBgm(); else startBgm(); clickS();render()}
+function confirmSurrender(){clickS();showModal(`<h2>Menyerah?</h2><p class="lead">Apakah kamu yakin ingin menyerah dan mengulang kuis dari awal?</p><div class="row" style="justify-content:flex-end;margin-top:18px"><button class="btn btnGhost" onclick="closeModal()">TIDAK</button><button class="btn btnDanger" onclick="surrender()">YA</button></div>`)}
+function surrender(){closeModal();clearInterval(state.timer);stopBgm();state.view='start';state.name='';state.idx=0;state.score=0;state.correct=0;state.lives=5;state.order=[];state.connect={};render()}
+function showModal(content){document.getElementById('modalRoot').innerHTML=`<div class="modalBack" onclick="if(event.target===this)closeModal()"><div class="modal">${content}</div></div>`}
+function closeModal(){document.getElementById('modalRoot').innerHTML=''}
+function showHowTo(q){showModal(`<div class="kicker">Cara bermain</div><h2>${iconForType(q.type)} Tipe soal: ${q.type==='choose'?'Pilih Gambar':q.type==='tf'?'Benar / Salah':q.type==='drag'?'Drag & Drop':q.type==='connect'?'Connecting Dot':'Mengurutkan Langkah'}</h2><p class="lead">${q.type==='choose'?'Pilih gambar yang paling sesuai dengan materi.':q.type==='tf'?'Pilih BENAR atau SALAH berdasarkan isi materi.':q.type==='drag'?'Seret kartu ke kotak yang tepat. Di mobile, ketuk kartu lalu ketuk tujuan.':q.type==='connect'?'Hubungkan titik di sisi kiri dengan titik pasangan yang tepat di sisi kanan.':'Gunakan tombol ▲ ▼ untuk menyusun langkah dari awal hingga akhir.'}</p><p><b>⏱️ 30 detik</b> per soal • <b>❤️ 5 nyawa</b> • Jawaban salah mengurangi 1 nyawa.</p><div style="margin-top:18px;text-align:right"><button class="btn btnPrimary" onclick="closeModal();initAudio();startBgm()">SIAP, MULAI!</button></div>`)}
+window.addEventListener('beforeunload',()=>{clearInterval(state.timer);stopBgm()});
+window.addEventListener('resize',()=>{if(state.view==='game' && QUESTIONS[state.idx]?.type==='connect')renderConnectState()});
+render();
+</script>
+</body>
+</html>
